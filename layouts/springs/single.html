@@ -1,12 +1,6 @@
-<!doctype html>
-<html>
-<head>
-    <title>{{ .Title }}</title>
-</head>
-<body>
-    <h1>{{ .Params.name }} Hot Springs</h1>
-    <p>Temp: {{ .Params.temp_f }} °F — Fee: ${{ .Params.fee }}</p>
-    <p>{{ .Params.description }}</p>
-    <span>GPS: {{ .Params.gps }}</span>
-</body>
-</html>
+{{ define "main" }}
+<h1>{{ .Params.name }} Hot Springs</h1>
+<p>Temp: {{ .Params.temp_f }} °F — Fee: ${{ .Params.fee }}</p>
+<p>{{ .Params.description }}</p>
+<span>GPS: {{ .Params.gps }}</span>
+{{ end }}

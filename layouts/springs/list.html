@@ -1,0 +1,20 @@
+<!doctype html>
+<html>
+<head>
+    <title>{{ .Title }}</title>
+</head>
+<body>
+    <h1>{{ .Title }}</h1>
+    {{ .Content }}
+    
+    <h2>Hot Springs Directory</h2>
+    <ul>
+    {{ range .Pages }}
+        <li>
+            <a href="{{ .Permalink }}">{{ .Params.name }} Hot Springs</a>
+            - {{ .Params.temp_f }}°F, ${{ .Params.fee }}
+        </li>
+    {{ end }}
+    </ul>
+</body>
+</html>
