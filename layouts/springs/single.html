@@ -1,6 +1,46 @@
-{{ define "main" }}
-<h1>{{ .Params.name }} Hot Springs</h1>
-<p>Temp: {{ .Params.temp_f }} °F — Fee: ${{ .Params.fee }}</p>
-<p>{{ .Params.description }}</p>
-<span>GPS: {{ .Params.gps }}</span>
-{{ end }}
+<!doctype html>
+<html>
+<head>
+    <title>{{ .Title }}</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 300px; width: 100%; margin: 20px 0; }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+    </style>
+</head>
+<body>
+    <h1>{{ .Params.name }} Hot Springs</h1>
+    <p><strong>Temperature:</strong> {{ .Params.temp_f }}°F | <strong>Fee:</strong> ${{ .Params.fee }}</p>
+    <p>{{ .Params.description }}</p>
+    
+    <h3>Location</h3>
+    <div id="map"></div>
+    <p><strong>GPS Coordinates:</strong> {{ .Params.gps }}</p>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Parse GPS coordinates from "47.9689° N, 123.8631° W" format
+        const gpsString = "{{ .Params.gps }}";
+        const coords = gpsString.match(/([\d.]+)°\s*N,\s*([\d.]+)°\s*W/);
+        
+        if (coords) {
+            const lat = parseFloat(coords[1]);
+            const lng = -parseFloat(coords[2]); // West is negative
+            
+            // Create map
+            const map = L.map('map').setView([lat, lng], 13);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+            
+            // Add marker for hot spring
+            L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup('<b>{{ .Params.name }} Hot Springs</b><br>{{ .Params.temp_f }}°F')
+                .openPopup();
+        }
+    </script>
+</body>
+</html>

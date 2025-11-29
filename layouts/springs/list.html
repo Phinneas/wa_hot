@@ -2,19 +2,58 @@
 <html>
 <head>
     <title>{{ .Title }}</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 400px; width: 100%; margin: 20px 0; }
+        body { font-family: Arial, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .springs-list { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+        .springs-list ul { margin: 0; }
+        .springs-list li { margin-bottom: 10px; }
+    </style>
 </head>
 <body>
     <h1>{{ .Title }}</h1>
     {{ .Content }}
     
-    <h2>Hot Springs Directory</h2>
-    <ul>
-    {{ range .Pages }}
-        <li>
-            <a href="{{ .Permalink }}">{{ .Params.name }} Hot Springs</a>
-            - {{ .Params.temp_f }}°F, ${{ .Params.fee }}
-        </li>
-    {{ end }}
-    </ul>
+    <h2>Map of All Hot Springs</h2>
+    <div id="map"></div>
+    
+    <div class="springs-list">
+        <div>
+            <h2>Hot Springs Directory</h2>
+            <ul>
+            {{ range .Pages }}
+                <li>
+                    <a href="{{ .Permalink }}">{{ .Params.name }} Hot Springs</a>
+                    - {{ .Params.temp_f }}°F, ${{ .Params.fee }}
+                </li>
+            {{ end }}
+            </ul>
+        </div>
+    </div>
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Create map centered on Washington State
+        const map = L.map('map').setView([47.5, -120.5], 7);
+        
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        // Add markers for each hot spring
+        {{ range .Pages }}
+        const gps{{ .File.BaseFileName }} = "{{ .Params.gps }}";
+        const coords{{ .File.BaseFileName }} = gps{{ .File.BaseFileName }}.match(/([\d.]+)°\s*N,\s*([\d.]+)°\s*W/);
+        if (coords{{ .File.BaseFileName }}) {
+            const lat = parseFloat(coords{{ .File.BaseFileName }}[1]);
+            const lng = -parseFloat(coords{{ .File.BaseFileName }}[2]);
+            L.marker([lat, lng])
+                .addTo(map)
+                .bindPopup('<b><a href="{{ .Permalink }}">{{ .Params.name }} Hot Springs</a></b><br>{{ .Params.temp_f }}°F - ${{ .Params.fee }}');
+        }
+        {{ end }}
+    </script>
 </body>
 </html>
