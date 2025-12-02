@@ -196,7 +196,7 @@
             .then(r => r.json())
             .then(data => {
                 springs = data;
-                map = L.map('map').setView([47.5, -120], 7);
+                map = L.map('map').setView([47.5, -120.5], 7);
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                     attribution: '© OpenStreetMap contributors'
                 }).addTo(map);
@@ -343,11 +343,33 @@
                         displaySprings();
                     },
                     (error) => {
-                        status.textContent = '❌ Could not get your location.';
+                        let errorMsg = '❌ Could not get your location. ';
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg += 'Location permission denied. Please enable location access in your browser settings.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg += 'Location unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg += 'Request timed out.';
+                                break;
+                            default:
+                                errorMsg += 'Unknown error.';
+                        }
+                        
+                        status.textContent = errorMsg;
+                        console.error('Geolocation error:', error);
+                    },
+                    {
+                        enableHighAccuracy: false,
+                        timeout: 10000,
+                        maximumAge: 300000
                     }
                 );
             } else {
-                status.textContent = '❌ Geolocation not supported.';
+                status.textContent = '❌ Geolocation not supported by your browser.';
             }
         }
 

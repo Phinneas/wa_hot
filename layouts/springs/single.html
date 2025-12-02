@@ -27,6 +27,16 @@
         .sun-times { display: flex; justify-content: space-between; margin: 10px 0; }
         .gps-copy { background: #6c757d; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; }
         .gps-copy:hover { background: #5a6268; }
+        .forecast-strip { display: flex; gap: 10px; overflow-x: auto; margin: 15px 0; padding: 10px 0; }
+        .forecast-day { min-width: 80px; text-align: center; padding: 10px; background: #fff; border-radius: 6px; border: 1px solid #dee2e6; }
+        .forecast-day-name { font-weight: bold; font-size: 0.9em; color: #666; }
+        .forecast-temp { font-size: 1.1em; color: #007acc; margin: 5px 0; }
+        .forecast-icon { font-size: 1.5em; margin: 5px 0; }
+        .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; margin: 20px 0; }
+        .action-btn { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; text-decoration: none; display: inline-block; font-size: 0.9em; }
+        .action-btn:hover { background: #218838; }
+        .action-btn.secondary { background: #6c757d; }
+        .action-btn.secondary:hover { background: #5a6268; }
     </style>
 </head>
 <body>
@@ -76,11 +86,14 @@
 
     <div class="widget-grid">
         <div class="widget-card">
-            <h4>🌤️ Current Weather</h4>
+            <h4>🌤️ Weather Forecast</h4>
             <div id="weather-card">Loading weather...</div>
             <div id="sun-times" class="sun-times">
                 <span id="sunrise">🌅 Loading...</span>
                 <span id="sunset">🌇 Loading...</span>
+            </div>
+            <div id="forecast-strip" class="forecast-strip">
+                <div style="text-align: center; width: 100%; color: #999;">Loading 7-day forecast...</div>
             </div>
         </div>
         
@@ -91,6 +104,11 @@
             </ul>
             <div id="crowd-estimate" style="margin-top: 15px; font-style: italic;"></div>
         </div>
+    </div>
+
+    <div class="action-buttons">
+        <button class="action-btn" onclick="saveToCalendar()">📅 Add to Calendar</button>
+        <button class="action-btn secondary" onclick="reportStatus()">📝 Report Status/Conditions</button>
     </div>
 
     <h3>📍 Location & Map</h3>
@@ -138,11 +156,37 @@
                         calculateAndDisplayDirections();
                     },
                     (error) => {
-                        alert('Could not get your location. Please try entering your address instead.');
+                        let errorMsg = 'Could not get your location. ';
+                        
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg += 'Location permission was denied. Please enable location access in your browser settings and try again.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg += 'Location information is unavailable.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg += 'Location request timed out.';
+                                break;
+                            default:
+                                errorMsg += 'An unknown error occurred.';
+                        }
+                        
+                        errorMsg += '\n\nTip: You can enter your address manually instead.';
+                        alert(errorMsg);
+                        
+                        // Auto-show address input as fallback
+                        showAddressInput();
+                    },
+                    {
+                        enableHighAccuracy: false,
+                        timeout: 10000,
+                        maximumAge: 300000
                     }
                 );
             } else {
-                alert('Geolocation not supported by your browser.');
+                alert('Geolocation not supported by your browser. Please enter your address manually.');
+                showAddressInput();
             }
         }
 
@@ -243,6 +287,7 @@
             
             // Load weather and other widgets
             loadWeather(springLat, springLng);
+            load7DayForecast(springLat, springLng);
             loadSunTimes(springLat, springLng);
             generatePackingList();
             estimateCrowd();
@@ -339,6 +384,120 @@
             document.getElementById('crowd-estimate').innerHTML = `
                 <span style="color: ${crowdColor};">📊 Expected crowd: ${crowdLevel}</span>
             `;
+        }
+
+        // 7-Day Forecast
+        function load7DayForecast(lat, lng) {
+            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,weather_code&temperature_unit=fahrenheit&timezone=auto`)
+                .then(r => r.json())
+                .then(d => {
+                    const forecastHTML = d.daily.time.slice(0, 7).map((date, i) => {
+                        const dayName = new Date(date).toLocaleDateString('en-US', { weekday: 'short' });
+                        const maxTemp = Math.round(d.daily.temperature_2m_max[i]);
+                        const minTemp = Math.round(d.daily.temperature_2m_min[i]);
+                        const precip = d.daily.precipitation_sum[i];
+                        const weatherCode = d.daily.weather_code[i];
+                        
+                        // Weather icon based on code
+                        let icon = '☀️';
+                        if (weatherCode >= 80) icon = '🌧️';
+                        else if (weatherCode >= 61) icon = '🌦️';
+                        else if (weatherCode >= 51) icon = '🌧️';
+                        else if (weatherCode >= 45) icon = '🌫️';
+                        else if (weatherCode >= 20) icon = '☁️';
+                        
+                        return `
+                            <div class="forecast-day">
+                                <div class="forecast-day-name">${dayName}</div>
+                                <div class="forecast-icon">${icon}</div>
+                                <div class="forecast-temp">${maxTemp}°/${minTemp}°</div>
+                                <div style="font-size: 0.8em; color: #666;">${precip > 0 ? precip + '"' : 'Dry'}</div>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    document.getElementById('forecast-strip').innerHTML = forecastHTML;
+                })
+                .catch(() => {
+                    document.getElementById('forecast-strip').innerHTML = '<div style="text-align: center; width: 100%; color: #999;">Forecast unavailable</div>';
+                });
+        }
+
+        // Save to Calendar (.ics file)
+        function saveToCalendar() {
+            const springName = "{{ .Params.name }} Hot Springs";
+            const gps = "{{ .Params.gps }}";
+            const description = "{{ .Params.description }}";
+            const temp = "{{ .Params.temp_f }}";
+            const fee = "{{ .Params.fee }}";
+            
+            // Default to next Saturday at 10 AM
+            const now = new Date();
+            const daysUntilSaturday = (6 - now.getDay() + 7) % 7 || 7;
+            const startDate = new Date(now);
+            startDate.setDate(now.getDate() + daysUntilSaturday);
+            startDate.setHours(10, 0, 0, 0);
+            
+            const endDate = new Date(startDate);
+            endDate.setHours(13, 0, 0, 0); // 3-hour soak
+            
+            // Format dates for iCal (YYYYMMDDTHHMMSS)
+            const formatDate = (date) => {
+                return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            };
+            
+            const icsContent = [
+                'BEGIN:VCALENDAR',
+                'VERSION:2.0',
+                'PRODID:-//Washington Hot Springs//EN',
+                'BEGIN:VEVENT',
+                `UID:${Date.now()}@washingtonhotsprings.com`,
+                `DTSTAMP:${formatDate(new Date())}`,
+                `DTSTART:${formatDate(startDate)}`,
+                `DTEND:${formatDate(endDate)}`,
+                `SUMMARY:${springName} Visit`,
+                `DESCRIPTION:Temperature: ${temp}°F\\nFee: $${fee}\\n${description}\\n\\nGPS: ${gps}`,
+                `LOCATION:${gps}`,
+                'STATUS:TENTATIVE',
+                'BEGIN:VALARM',
+                'TRIGGER:-PT24H',
+                'DESCRIPTION:Pack for hot springs tomorrow!',
+                'ACTION:DISPLAY',
+                'END:VALARM',
+                'END:VEVENT',
+                'END:VCALENDAR'
+            ].join('\r\n');
+            
+            // Create download
+            const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `${springName.replace(/\s+/g, '-').toLowerCase()}.ics`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert('📅 Calendar event created! Check your downloads folder.');
+        }
+
+        // Report Status Form
+        function reportStatus() {
+            const springName = "{{ .Params.name }} Hot Springs";
+            const springSlug = "{{ .Slug }}";
+            
+            // Create a simple form using Tally (free form service)
+            // You can replace this with your preferred form service
+            const formURL = `https://tally.so/r/wMRq4v?spring=${encodeURIComponent(springName)}&slug=${springSlug}`;
+            
+            // Open in new window
+            window.open(formURL, '_blank', 'width=600,height=800');
+            
+            // Alternative: Use a simple prompt for now
+            // const feedback = prompt(`Report conditions for ${springName}:\n\nPlease describe current conditions, crowd level, or any issues:`);
+            // if (feedback) {
+            //     alert('Thank you! Your report has been noted. We will review and update the listing.');
+            //     // In production, you'd send this to a backend or form service
+            // }
         }
 
         // GPS copy function

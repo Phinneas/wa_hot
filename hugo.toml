@@ -3,3 +3,6 @@ languageCode = 'en-us'
 title = 'Washington Hot Springs Directory'
 
 enableData = true
+
+[outputs]
+  section = ["HTML", "JSON"]
