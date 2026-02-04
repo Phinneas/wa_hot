@@ -129,6 +129,220 @@
     
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
+        // Overpass API configuration
+        const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+        const RADIUS_METERS = 16093; // 10 miles
+        
+        // Category definitions with colors and icons
+        const CATEGORIES = {
+            restaurants: {
+                name: 'Restaurants',
+                color: '#ff6b6b',
+                icon: '🍽️',
+                query: '[out:json];(node[amenity=restaurant](around:{RADIUS},{lat},{lng});way[amenity=restaurant](around:{RADIUS},{lat},{lng});node[amenity=cafe](around:{RADIUS},{lat},{lng});way[amenity=cafe](around:{RADIUS},{lat},{lng}););out center;'
+            },
+            trails: {
+                name: 'Trails',
+                color: '#4ecdc4',
+                icon: '🥾',
+                query: '[out:json];(node[route=hiking](around:{RADIUS},{lat},{lng});way[route=hiking](around:{RADIUS},{lat},{lng});node[highway=path][sac_scale](around:{RADIUS},{lat},{lng});way[highway=path][sac_scale](around:{RADIUS},{lat},{lng}););out center;'
+            },
+            gas: {
+                name: 'Gas Stations',
+                color: '#f7b731',
+                icon: '⛽',
+                query: '[out:json];(node[amenity=fuel](around:{RADIUS},{lat},{lng});way[amenity=fuel](around:{RADIUS},{lat},{lng}););out center;'
+            },
+            campgrounds: {
+                name: 'Campgrounds',
+                color: '#95e77e',
+                icon: '🏕️',
+                query: '[out:json];(node[tourism=camp_site](around:{RADIUS},{lat},{lng});way[tourism=camp_site](around:{RADIUS},{lat},{lng}););out center;'
+            }
+        };
+        
+        // Overpass API integration
+        class NearbyAttractions {
+            constructor(map, centerLat, centerLng) {
+                this.map = map;
+                this.centerLat = centerLat;
+                this.centerLng = centerLng;
+                this.layers = {};
+                this.layerGroup = L.layerGroup().addTo(map);
+                this.controlAdded = false;
+            }
+            
+            async fetchCategory(category) {
+                const query = CATEGORIES[category].query
+                    .replace(/{RADIUS}/g, RADIUS_METERS)
+                    .replace(/{lat}/g, this.centerLat)
+                    .replace(/{lng}/g, this.centerLng);
+                
+                try {
+                    const response = await fetch(OVERPASS_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: `data=${encodeURIComponent(query)}`
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    return this.processResults(data.elements, category);
+                } catch (error) {
+                    console.error(`Error fetching ${category}:`, error);
+                    return [];
+                }
+            }
+            
+            processResults(elements, category) {
+                return elements
+                    .filter(element => element.tags && element.tags.name)
+                    .map(element => {
+                        const lat = element.lat || (element.center && element.center.lat);
+                        const lng = element.lon || (element.center && element.center.lon);
+                        const distance = this.calculateDistance(lat, lng);
+                        
+                        return {
+                            id: element.id,
+                            name: element.tags.name,
+                            lat: lat,
+                            lng: lng,
+                            distance: distance,
+                            category: category,
+                            type: this.getTypeFromTags(element.tags),
+                            tags: element.tags
+                        };
+                    })
+                    .sort((a, b) => a.distance - b.distance) // Sort by distance
+                    .slice(0, 20); // Limit to 20 closest
+            }
+            
+            calculateDistance(lat, lng) {
+                const R = 3959; // Earth's radius in miles
+                const dLat = (lat - this.centerLat) * Math.PI / 180;
+                const dLng = (lng - this.centerLng) * Math.PI / 180;
+                const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                          Math.cos(this.centerLat * Math.PI / 180) * Math.cos(lat * Math.PI / 180) *
+                          Math.sin(dLng/2) * Math.sin(dLng/2);
+                const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+                return R * c;
+            }
+            
+            getTypeFromTags(tags) {
+                if (tags.amenity === 'restaurant' || tags.amenity === 'cafe') return 'Restaurant';
+                if (tags.amenity === 'fuel') return 'Gas Station';
+                if (tags.tourism === 'camp_site') return 'Campground';
+                if (tags.route === 'hiking' || tags.sac_scale) return 'Hiking Trail';
+                return 'Point of Interest';
+            }
+            
+            createPopupHTML(attraction) {
+                const categoryKey = attraction.category;
+                const category = CATEGORIES[categoryKey];
+                const googleMapsUrl = `https://www.google.com/maps/dir/${this.centerLat},${this.centerLng}/${attraction.lat},${attraction.lng}`;
+                
+                return `
+                    <div style="font-family: Arial, sans-serif; line-height: 1.4;">
+                        <div style="font-size: 1.1em; font-weight: bold; margin-bottom: 5px; color: ${category.color};">
+                            ${category.icon} ${attraction.name}
+                        </div>
+                        <div style="color: #666; margin-bottom: 8px;">
+                            ${attraction.type} • ${attraction.distance.toFixed(1)} miles away
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <a href="${googleMapsUrl}" target="_blank" style="background: #4285f4; color: white; padding: 6px 12px; text-decoration: none; border-radius: 4px; font-size: 0.9em; display: inline-block;">
+                                🗺️ Get Directions
+                            </a>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            createMarker(attraction) {
+                const category = CATEGORIES[attraction.category];
+                
+                // Create colored marker icon
+                const markerIcon = L.divIcon({
+                    className: 'custom-marker',
+                    html: `
+                        <div style="
+                            background: ${category.color};
+                            width: 30px;
+                            height: 30px;
+                            border-radius: 50% 50% 50% 0;
+                            transform: rotate(-45deg);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                        ">
+                            <span style="
+                                transform: rotate(45deg);
+                                color: white;
+                                font-size: 16px;
+                                line-height: 1;
+                            ">${category.icon}</span>
+                        </div>
+                    `,
+                    iconSize: [30, 30],
+                    iconAnchor: [15, 30]
+                });
+                
+                const marker = L.marker([attraction.lat, attraction.lng], {
+                    icon: markerIcon
+                }).bindPopup(this.createPopupHTML(attraction));
+                
+                return marker;
+            }
+            
+            async loadAllCategories() {
+                console.log('📍 Loading nearby attractions...');
+                
+                for (const [key, category] of Object.entries(CATEGORIES)) {
+                    const attractions = await this.fetchCategory(key);
+                    
+                    if (attractions.length > 0) {
+                        const markers = attractions.map(a => this.createMarker(a));
+                        this.layers[key] = L.layerGroup(markers);
+                    }
+                }
+                
+                this.addLayerControl();
+            }
+            
+            addLayerControl() {
+                if (this.controlAdded) return;
+                
+                const overlayMaps = {};
+                for (const [key, category] of Object.entries(CATEGORIES)) {
+                    if (this.layers[key]) {
+                        overlayMaps[category.name] = this.layers[key];
+                    }
+                }
+                
+                // Add layer control
+                L.control.layers(null, overlayMaps, {
+                    collapsed: false,
+                    position: 'topright'
+                }).addTo(this.map);
+                
+                this.controlAdded = true;
+                
+                // Add instructions
+                const instructions = document.createElement('div');
+                instructions.innerHTML = `
+                    <div style="background: rgba(255,255,255,0.9); padding: 8px 12px; margin-top: 10px; border-radius: 4px; font-size: 0.85em; color: #666;">
+                        📍 Click categories above to toggle nearby attractions
+                    </div>
+                `;
+                document.querySelector('.leaflet-control-layers').appendChild(instructions);
+            }
+        }
         // Parse GPS coordinates
         const gpsString = "{{ .Params.gps }}";
         const coords = gpsString.match(/([\d.]+)°\s*N,\s*([\d.]+)°\s*W/);
