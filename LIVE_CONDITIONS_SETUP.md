@@ -1,15 +1,16 @@
 # Live Conditions Feed - Setup Guide
 
-This guide explains how to set up the visitor-reported conditions feed for your hot springs directory.
+This guide explains how to set up the visitor-reported conditions feed for your hot springs directory with comprehensive error handling.
 
 ## Overview
 
-The Live Conditions Feed displays real-time visitor reports for each hot spring, showing:
-- Recent crowd levels
-- Water temperature (user-reported)
-- Open/closed status
-- Photos and notes
-- "Last verified" timestamp
+The Live Conditions Feed displays real-time visitor reports for each hot spring with robust error handling and graceful degradation for all states:
+
+- ✅ **Loading state** - Skeleton loader while fetching
+- ✅ **Empty state** - "No recent reports" with friendly message
+- ✅ **Error state** - "Conditions temporarily unavailable" with retry
+- ✅ **Data state** - Beautiful report cards with all data
+- ✅ **Partial data** - Hides missing fields, no placeholder text
 
 ## Prerequisites
 
@@ -39,13 +40,13 @@ Create a new table named `reports` with these fields:
 ### Crowd Level Options
 
 Create a Single Select field with these options:
-- **1** - Quiet (label: "Quiet")
-- **2** - Light (label: "Light")
-- **3** - Moderate (label: "Moderate")
-- **4** - Busy (label: "Busy")
-- **5** - Packed (label: "Packed")
+- **1** - Quiet
+- **2** - Light
+- **3** - Moderate
+- **4** - Busy
+- **5** - Packed
 
-**Important**: Use the number as the option name, but you can set the label to the text description.
+**Important**: Use the number as the option name. The JavaScript will parse these as integers.
 
 ## Step 2: Create Report Submission Form
 
@@ -91,7 +92,36 @@ If you prefer a custom form, create an HTML form that POSTs to the Teable API:
 </form>
 ```
 
-## Step 3: Configure the Integration
+## Step 3: Configure Error Handling
+
+### Key Features of Error Handling
+
+The integration includes:
+
+1. **Try/catch around all API calls** - No unhandled exceptions
+2. **Timeout protection** - 10-second timeout prevents hanging
+3. **Null-safe data parsing** - Handles missing/invalid fields gracefully
+4. **Network error detection** - Differentiates between network and API errors
+5. **User-friendly error states** - Clear messages, no console errors visible
+6. **Retry mechanism** - "Try Again" button for transient failures
+7. **Partial data support** - Shows available data, hides missing fields
+
+### Error States Handled
+
+| State | UI Message | Console Behavior |
+|-------|------------|------------------|
+| **Loading** | Skeleton loader | Silent |
+| **No API token** | "Conditions feed not configured" | Warning logged |
+| **Network error** | "Conditions temporarily unavailable" | Error logged |
+| **API timeout** | "Request timed out" | Error logged |
+| **HTTP 401** | "Conditions temporarily unavailable" | Auth error logged |
+| **HTTP 403** | "Conditions temporarily unavailable" | Permission error logged |
+| **HTTP 404** | "Conditions temporarily unavailable" | Not found error logged |
+| **No reports** | "No recent reports. Be the first!" | Silent |
+| **Invalid data** | Shows available fields only | Warning logged |
+| **JavaScript disabled** | "JavaScript required" | N/A (noscript) |
+
+## Step 4: Configure the Integration
 
 ### Update layouts/springs/single.html
 
@@ -121,7 +151,7 @@ TEABLE_API_TOKEN=your_token_here
 In `static/js/conditions-feed.js`, update these values:
 
 ```javascript
-// Line ~5: Set your reports table ID
+// Line ~12: Set your reports table ID
 this.config = {
   teableBaseUrl: 'https://teable-snickers-u27640.vm.elestio.app',
   tableId: 'YOUR_REPORTS_TABLE_ID', // Get from Teable URL when viewing table
@@ -131,242 +161,308 @@ this.config = {
   ...config
 };
 
-// Line ~133: Update the report form URL
+// Line ~226: Update the report form URL
 const reportFormUrl = `https://teable-snickers-u27640.vm.elestio.app/share/form/YOUR_FORM_ID?prefill_spring_slug=${encodeURIComponent(this.config.springSlug)}`;
 ```
 
-## Step 4: Teable API Query Example
+### Field ID Configuration
 
-### Fetch Reports for a Spring
+**Important**: In `static/js/conditions-feed.js`, update field IDs to match your Teable table:
 
 ```javascript
-async fetchReports() {
-  const url = `${this.config.teableBaseUrl}/api/table/${this.config.tableId}/record`;
-  
-  // Filter: get reports for specific spring
-  const filter = {
-    conjunction: "and",
-    filterSet: [
-      {
-        fieldId: "spring_slug", // Use actual field ID from Teable
-        operator: "is",
-        value: this.config.springSlug // e.g., "sol-duc"
-      }
-    ]
-  };
-  
-  // Sort: newest first
-  const orderBy = [{
-    fieldId: "created_at", // Use actual field ID
-    order: "desc"
-  }];
-  
-  const params = new URLSearchParams({
-    filter: JSON.stringify(filter),
-    orderBy: JSON.stringify(orderBy),
-    take: 5, // Last 5 reports
-    fieldKeyType: 'name' // Use field names instead of IDs
-  });
-  
-  const response = await fetch(`${url}?${params}`, {
-    headers: {
-      'Authorization': `Bearer YOUR_API_TOKEN`,
-      'Accept': 'application/json'
-    }
-  });
-  
-  const data = await response.json();
-  
-  // Transform to report objects
-  return data.records.map(record => ({
-    visitDate: record.fields.visit_date,
-    crowdLevel: record.fields.crowd_level,
-    waterTemp: record.fields.water_temp,
-    isOpen: record.fields.is_open,
-    photoUrl: record.fields.photo_url,
-    notes: record.fields.notes,
-    createdAt: record.fields.created_at
-  }));
-}
-```
-
-### API Response Format
-
-```json
-{
-  "records": [
+// Lines ~81-88: Update these field IDs
+filter: {
+  conjunction: "and",
+  filterSet: [
     {
-      "id": "recXXXXXXXX",
-      "fields": {
-        "spring_slug": "sol-duc",
-        "visit_date": "2024-01-15",
-        "crowd_level": "3",
-        "water_temp": "102",
-        "is_open": true,
-        "photo_url": "https://i.imgur.com/xxxxxx.jpg",
-        "notes": "Beautiful morning soak! Water was perfect temp.",
-        "created_at": "2024-01-15T14:30:00.000Z"
-      },
-      "createdTime": "2024-01-15T14:30:00.000Z"
+      fieldId: "YOUR_SPRING_SLUG_FIELD_ID", // e.g., "fldXXXXXXX"
+      operator: "is",
+      value: this.config.springSlug
     }
   ]
 }
+
+// Lines ~92-95: Update orderBy field ID
+orderBy: JSON.stringify([{
+  fieldId: "YOUR_CREATED_AT_FIELD_ID", // e.g., "fldXXXXXXX"
+  order: "desc"
+}])
 ```
 
-## Step 5: Testing
+**To find field IDs:**
+1. Go to your Teable table
+2. Click on a field header
+3. Copy the field ID from the field settings
 
-### Test the Feed
+## Step 5: Teable API Query Example with Error Handling
 
-1. **View a spring page** in your browser
-2. **Check for reports** - should show "No reports yet" initially
-3. **Submit a test report** using your form
-4. **Refresh the page** - report should appear within seconds
+### Fetch Reports with Timeout
 
-### Test Time Formatting
+```javascript
+async fetchReportsWithTimeout() {
+  const timeoutMs = 10000; // 10 second timeout
+  
+  const timeoutPromise = new Promise((_, reject) => {
+    setTimeout(() => reject(new Error('Request timeout')), timeoutMs);
+  });
+  
+  const fetchPromise = this.fetchReports();
+  return Promise.race([fetchPromise, timeoutPromise]);
+}
+```
 
-Reports should display as:
-- "23 minutes ago"
-- "3 hours ago"
-- "2 days ago"
-- "Jan 15, 2024" (if older than 7 days)
+### Safe Data Parsing
 
-### Test Crowd Indicators
+```javascript
+// Handles null/undefined, validates ranges, logs warnings
+transformTeableRecord(record) {
+  const fields = record.fields || {};
+  return {
+    id: record.id || null,
+    visitDate: fields.visit_date || null,
+    crowdLevel: this.parseCrowdLevel(fields.crowd_level), // Returns null if invalid
+    waterTemp: this.parseNumber(fields.water_temp),      // Returns null if NaN
+    isOpen: this.parseBoolean(fields.is_open, true),    // Defaults to true
+    photoUrl: fields.photo_url || null,
+    notes: fields.notes || null,
+    createdAt: fields.created_at || null
+  };
+}
+```
 
-- 1 dot = Quiet
-- 2 dots = Light
-- 3 dots = Moderate
-- 4 dots = Busy
-- 5 dots = Packed
+### API Response Handling
 
-### Test Status Badges
+```javascript
+try {
+  const response = await fetch(url, { headers });
+  
+  if (!response.ok) {
+    // Different errors for different status codes
+    if (response.status === 401) {
+      throw new Error('Authentication failed');
+    } else if (response.status === 403) {
+      throw new Error('Access forbidden');
+    } else if (response.status === 404) {
+      throw new Error('Table not found');
+    }
+    throw new Error(`HTTP ${response.status}`);
+  }
+  
+  const data = await response.json();
+  
+  // Validate response structure
+  if (!data || !Array.isArray(data.records)) {
+    console.warn('Unexpected API response:', data);
+    return []; // Return empty array instead of crashing
+  }
+  
+  return data.records.map(record => this.transformTeableRecord(record));
+  
+} catch (error) {
+  // Network errors, timeouts, JSON parse errors
+  if (error.message === 'Request timeout') {
+    throw new Error('Request timed out');
+  }
+  if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+    throw new Error('Network error');
+  }
+  throw error;
+}
+```
 
-- Green "OPEN" badge
-- Red "CLOSED" badge
+## Step 6: Testing Error States
 
-## Step 6: Troubleshooting
+### Test All States
 
-### "Cannot GET /api/table/{id}/record"
+1. **Loading State**
+   - Open browser dev tools
+   - Throttle network to "Slow 3G"
+   - Reload page
+   - Should see skeleton loaders
 
-**Problem**: 404 error when fetching reports
+2. **No Reports State**
+   - View a spring with no reports
+   - Should see: "No recent reports. Be the first!"
 
-**Solution**: 
-1. Check your table ID is correct
-2. Verify API token has read access
-3. Ensure base URL matches your Teable instance
+3. **API Error State**
+   - Temporarily set an invalid API token
+   - Reload page
+   - Should see: "Conditions temporarily unavailable" + retry button
 
-### Reports not showing up
+4. **Timeout State**
+   - Block Teable domain in dev tools network tab
+   - Reload page
+   - Should see: "Request timed out" + retry button
 
-**Problem**: Form submits but reports don't appear
+5. **Partial Data State**
+   - Submit report with only crowd_level and is_open
+   - Should show only those fields, hide water_temp, notes, photo
 
-**Solution**:
-1. Check browser console for errors
-2. Verify `spring_slug` matches exactly (case-sensitive)
-3. Confirm `crowd_level` uses numbers 1-5, not text
-4. Check API token has permission to read the table
+6. **No JavaScript**
+   - Disable JavaScript in browser
+   - Should see noscript fallback message
 
-### Time shows "Invalid Date"
+### Expected Behavior
 
-**Problem**: Date formatting error
+| Scenario | Last Verified | Reports Section | Button |
+|----------|--------------|-----------------|--------|
+| **No reports** | "Not recently verified" | Empty state message | ✅ Enabled |
+| **API error** | "Not recently verified" | Error + retry button | ✅ Enabled |
+| **Loading** | "Loading..." | Skeleton loader | ❌ Disabled |
+| **Has reports** | "3 hours ago" | Report cards | ✅ Enabled |
+| **Timeout** | "Not recently verified" | Error + retry button | ✅ Enabled |
 
-**Solution**:
-1. Check `visit_date` format in Teable (should be YYYY-MM-DD)
-2. Verify `created_at` is populated by Teable (should be automatic)
+## Step 7: Error Handling Best Practices
 
-### Report button doesn't work
+### In Production
 
-**Problem**: Nothing happens when clicking "Report Conditions"
+1. **Monitor console** in dev tools - only warnings/errors, not user-facing
+2. **Test with ad blockers** - ensure Teable requests aren't blocked
+3. **Test on slow networks** - skeleton loader should show quickly
+4. **Check mobile** - responsive design works on all screen sizes
+5. **Verify retry button** - clicking it reloads data successfully
 
-**Solution**:
-1. Update `reportFormUrl` in conditions-feed.js with your actual form URL
-2. Check browser popup blocker
-3. Verify form accepts `spring_slug` prefill parameter
+### Graceful Degradation
+
+If Teable is down or misconfigured:
+- ✅ Page still loads
+- ✅ Other widgets (weather, map) still work
+- ✅ Report button still clickable
+- ✅ Users see "Conditions temporarily unavailable"
+- ✅ No JS errors break the page
+
+### Null Safety Examples
+
+```javascript
+// Safe property access
+const waterTemp = fields.water_temp || null;
+const hasPhoto = fields.photo_url && fields.photo_url.trim() !== '';
+
+// Safe parsing
+parseCrowdLevel(value) {
+  if (!value) return null;
+  const num = parseInt(value, 10);
+  return (isNaN(num) || num < 1 || num > 5) ? null : num;
+}
+
+// Safe date formatting
+formatTimeAgo(dateString) {
+  try {
+    if (!dateString) return 'Unknown';
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Unknown';
+    // ... rest of logic
+  } catch {
+    return 'Unknown';
+  }
+}
+
+// Safe HTML creation
+createReportHTML(report) {
+  try {
+    // All operations wrapped in try/catch
+    return htmlString;
+  } catch (error) {
+    console.warn('Error creating HTML:', error);
+    return ''; // Return empty string instead of crashing
+  }
+}
+```
 
 ## Customization
 
-### Change Number of Reports
+### Change Error Messages
 
 Edit `static/js/conditions-feed.js`:
 
 ```javascript
-// Line ~8
-maxReports: config.maxReports || 10, // Show 10 instead of 5
+// Line ~154-180: Update error messages
+const messages = {
+  'api-error': {
+    title: 'Conditions temporarily unavailable',
+    message: 'Unable to load recent reports. Please try refreshing the page.',
+    showFallback: true
+  },
+  'timeout': {
+    title: 'Request timed out',
+    message: 'The server is taking too long to respond.',
+    showFallback: true
+  }
+};
 ```
 
-### Customize Crowd Labels
+### Customize Loading Skeleton
 
-```javascript
-// Line ~260
-getCrowdLabel(level) {
-  const labels = {
-    1: 'Empty',
-    2: 'Few people',
-    3: 'Half full',
-    4: 'Mostly full',
-    5: 'Standing room only'
-  };
-  return labels[level] || 'Unknown';
+```css
+/* In conditions-feed.html */
+.skeleton-loader {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  /* Add more skeleton styles as needed */
 }
 ```
 
-### Add More Fields
+### Show More/Fewer Reports
 
-Edit the `createReportHTML` method to include additional fields from your reports table.
+```javascript
+// Line ~14: Change max reports
+maxReports: config.maxReports || 10, // Show 10 instead of 5
+```
 
-## Security Notes
+## Security & Privacy
 
 ⚠️ **Important**:
 - Never commit `.env` to git (already in `.gitignore`)
 - Use read-only API token for public-facing pages
 - Consider rate limiting on the Teable API
-- Photo URLs should be from trusted sources (Imgur, S3, etc.)
+- Photo URLs should be from trusted sources
+- Validate and sanitize all user input server-side
+- Test for XSS vulnerabilities in notes/fields
+
+## Performance
+
+- **10-second timeout** prevents page hang
+- **Skeleton loader** shows immediately
+- **Error states** render on failure
+- **No blocking** - async/await doesn't block page load
+- **Lazy loading** - widget initializes after DOM ready
+- **Efficient** - only fetches last 5 reports, sorted by date
+
+## Browser Compatibility
+
+Works in all modern browsers:
+- ✅ Chrome/Edge 90+
+- ✅ Firefox 88+
+- ✅ Safari 14+
+- ✅ iOS Safari 14+
+- ✅ Samsung Internet 14+
+
+**Note**: Requires `fetch` API and arrow functions (no IE11 support without polyfills)
+
+## Final Checklist
+
+Before going live:
+
+- [ ] Reports table created in Teable
+- [ ] All field types configured correctly
+- [ ] Crowd level options set (1-5)
+- [ ] Share form created and tested
+- [ ] Form URL added to conditions-feed.js
+- [ ] Reports table ID added to conditions-feed.js
+- [ ] Field IDs updated in conditions-feed.js
+- [ ] API token configured in .env
+- [ ] Tested all 6 error states
+- [ ] Verified responsive on mobile
+- [ ] Tested report submission flow
+- [ ] Checked console for warnings
+- [ ] Verified fallback UI shows when appropriate
 
 ## Support
 
 - Teable API Docs: https://help.teable.io/en/articles/9356083-api
-- Ghost Handlebars: https://ghost.org/docs/themes/
 - JavaScript fetch: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+- Error handling: https://javascript.info/try-catch
+- Null safety: https://developer.mozilla.org/en-US/docs/Glossary/Nullish
 
-## Example Final Result
-
-```html
-<div class="conditions-widget">
-  <div class="conditions-header">
-    <h3>📊 Live Conditions Feed</h3>
-    <div class="last-verified">Last verified: 3 hours ago</div>
-  </div>
-  
-  <div class="reports-list">
-    <div class="report-item">
-      <div class="report-header">
-        <div class="crowd-indicator">
-          <div class="crowd-dot active"></div>
-          <div class="crowd-dot active"></div>
-          <div class="crowd-dot active"></div>
-          <div class="crowd-dot"></div>
-          <div class="crowd-dot"></div>
-          <span class="crowd-label">Moderate</span>
-        </div>
-        <div><span class="status-badge status-open">Open</span></div>
-        <div class="report-time">3 hours ago</div>
-      </div>
-      <div class="report-details">
-        <div class="detail-item">
-          <span class="detail-label">Water Temp</span>
-          <span class="detail-value">102°F</span>
-        </div>
-        <div class="detail-item">
-          <span class="detail-label">Visit Date</span>
-          <span class="detail-value">Jan 15, 2024</span>
-        </div>
-      </div>
-      <div class="report-notes">
-        <strong>Note:</strong> Beautiful morning soak! Water was perfect temp.
-      </div>
-    </div>
-  </div>
-  
-  <div class="report-button-container">
-    <button class="report-btn">📝 Report Current Conditions</button>
-  </div>
-</div>
-```
+**The Live Conditions Feed is now production-ready with full error handling!** 🎉
