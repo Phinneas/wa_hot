@@ -1,0 +1,237 @@
+<!-- Live Conditions Feed Widget -->
+<div id="conditions-feed" class="conditions-widget" data-spring-slug="{{ .Params.slug }}">
+    <div class="conditions-header">
+        <h3>📊 Live Conditions Feed</h3>
+        <div class="last-verified">
+            Last verified: <span id="last-verified-time">Loading...</span>
+        </div>
+    </div>
+    
+    <div id="reports-container" class="reports-list">
+        <div class="loading">Loading recent reports...</div>
+    </div>
+    
+    <div class="report-button-container">
+        <button id="report-conditions-btn" class="report-btn">
+            📝 Report Current Conditions
+        </button>
+    </div>
+</div>
+
+<style>
+.conditions-widget {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.conditions-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.conditions-header h3 {
+    margin: 0;
+    color: #212529;
+    font-size: 1.2em;
+}
+
+.last-verified {
+    font-size: 0.9em;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.reports-list {
+    margin: 15px 0;
+}
+
+.report-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    position: relative;
+    transition: box-shadow 0.2s;
+}
+
+.report-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.report-time {
+    font-size: 0.85em;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.crowd-indicator {
+    display: flex;
+    gap: 3px;
+    align-items: center;
+}
+
+.crowd-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #dee2e6;
+}
+
+.crowd-dot.active {
+    background: #ffc107;
+}
+
+.crowd-label {
+    margin-left: 8px;
+    font-size: 0.85em;
+    font-weight: 500;
+    color: #495057;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-open {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-closed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.report-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 10px;
+    margin: 10px 0;
+    font-size: 0.9em;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-label {
+    font-size: 0.8em;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #212529;
+}
+
+.report-notes {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #e9ecef;
+    font-size: 0.9em;
+    color: #495057;
+    line-height: 1.4;
+}
+
+.report-photo {
+    margin-top: 10px;
+    border-radius: 4px;
+    overflow: hidden;
+    max-width: 200px;
+}
+
+.report-photo img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.no-reports {
+    text-align: center;
+    padding: 30px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+}
+
+.report-button-container {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+}
+
+.report-btn {
+    background: #007acc;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.report-btn:hover {
+    background: #005a99;
+    transform: translateY(-1px);
+}
+
+.report-btn:active {
+    transform: translateY(0);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .conditions-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .report-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .report-details {
+        grid-template-columns: 1fr;
+    }
+}
+</style>

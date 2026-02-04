@@ -120,6 +120,9 @@
         <button class="action-btn" onclick="saveToCalendar()">📅 Add to Calendar</button>
         <button class="action-btn secondary" onclick="reportStatus()">📝 Report Status/Conditions</button>
     </div>
+    
+    <!-- Live Conditions Feed Widget -->
+    {{ partial "conditions-feed.html" . }}
 
     <h3>📍 Location & Map</h3>
     <div id="map"></div>
@@ -744,7 +747,7 @@
             // }
         }
 
-        // GPS copy function
+n        // GPS copy function
         function copyGPS() {
             navigator.clipboard.writeText('{{ .Params.gps }}').then(() => {
                 const btn = document.querySelector('.gps-copy');
@@ -757,6 +760,13 @@
                 alert('GPS coordinates: {{ .Params.gps }}');
             });
         }
+    </script>
+    
+    <!-- Live Conditions Feed Script -->
+    <script src="/js/conditions-feed.js"></script>
+    <script>
+        // Set API token from environment (you'll need to pass this from Hugo)
+        window.TEABLE_API_TOKEN = '{{ getenv "TEABLE_API_TOKEN" }}';
     </script>
 </body>
 </html>
