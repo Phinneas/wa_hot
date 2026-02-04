@@ -8,7 +8,12 @@
     </div>
     
     <div id="reports-container" class="reports-list">
-        <div class="loading">Loading recent reports...</div>
+        <!-- Loading state -->
+        <div class="loading-state">
+            <div class="skeleton-loader"></div>
+            <div class="skeleton-loader"></div>
+            <div class="skeleton-loader short"></div>
+        </div>
     </div>
     
     <div class="report-button-container">
@@ -18,7 +23,22 @@
     </div>
 </div>
 
+<!-- No Script Fallback -->
+<noscript>
+    <div class="conditions-widget">
+        <div class="error-state">
+            <div class="error-icon">⚠️</div>
+            <div class="error-title">JavaScript required</div>
+            <div class="error-message">
+                Please enable JavaScript to view live conditions.
+            </div>
+        </div>
+    </div>
+</noscript>
+
 <style>
+/* === Conditions Feed Styles === */
+
 .conditions-widget {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
@@ -26,13 +46,18 @@
     padding: 20px;
     margin: 20px 0;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    min-height: 120px;
+}
+
+.conditions-widget * {
+    box-sizing: border-box;
 }
 
 .conditions-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
     flex-wrap: wrap;
     gap: 10px;
 }
@@ -41,17 +66,21 @@
     margin: 0;
     color: #212529;
     font-size: 1.2em;
+    font-weight: 600;
 }
 
 .last-verified {
-    font-size: 0.9em;
+    font-size: 0.85em;
     color: #6c757d;
     font-style: italic;
 }
 
 .reports-list {
-    margin: 15px 0;
+    margin: 20px 0;
+    min-height: 80px;
 }
+
+/* === Report Item === */
 
 .report-item {
     background: white;
@@ -60,7 +89,7 @@
     padding: 15px;
     margin-bottom: 15px;
     position: relative;
-    transition: box-shadow 0.2s;
+    transition: box-shadow 0.2s ease;
 }
 
 .report-item:hover {
@@ -71,21 +100,25 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
     flex-wrap: wrap;
     gap: 8px;
 }
 
 .report-time {
-    font-size: 0.85em;
+    font-size: 0.8em;
     color: #6c757d;
     font-weight: 500;
+    white-space: nowrap;
 }
+
+/* === Crowd Indicator === */
 
 .crowd-indicator {
     display: flex;
     gap: 3px;
     align-items: center;
+    min-width: 120px;
 }
 
 .crowd-dot {
@@ -93,6 +126,7 @@
     height: 8px;
     border-radius: 50%;
     background: #dee2e6;
+    transition: background-color 0.2s ease;
 }
 
 .crowd-dot.active {
@@ -106,14 +140,17 @@
     color: #495057;
 }
 
+/* === Status Badge === */
+
 .status-badge {
     display: inline-block;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 12px;
-    font-size: 0.75em;
+    font-size: 0.7em;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
 .status-open {
@@ -126,11 +163,18 @@
     color: #721c24;
 }
 
+.status-unknown {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+/* === Report Details === */
+
 .report-details {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 10px;
-    margin: 10px 0;
+    gap: 12px;
+    margin: 12px 0;
     font-size: 0.9em;
 }
 
@@ -140,11 +184,12 @@
 }
 
 .detail-label {
-    font-size: 0.8em;
+    font-size: 0.75em;
     color: #6c757d;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
+    font-weight: 500;
 }
 
 .detail-value {
@@ -152,20 +197,27 @@
     color: #212529;
 }
 
+/* === Notes and Photos === */
+
 .report-notes {
-    margin-top: 10px;
-    padding-top: 10px;
+    margin-top: 12px;
+    padding-top: 12px;
     border-top: 1px solid #e9ecef;
     font-size: 0.9em;
     color: #495057;
-    line-height: 1.4;
+    line-height: 1.5;
+}
+
+.report-notes strong {
+    color: #212529;
 }
 
 .report-photo {
-    margin-top: 10px;
-    border-radius: 4px;
+    margin-top: 12px;
+    border-radius: 6px;
     overflow: hidden;
-    max-width: 200px;
+    max-width: 220px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .report-photo img {
@@ -174,22 +226,118 @@
     display: block;
 }
 
-.no-reports {
-    text-align: center;
-    padding: 30px;
-    color: #6c757d;
-    font-style: italic;
+/* === Loading State (Skeleton) === */
+
+.loading-state {
+    padding: 15px 0;
 }
 
-.loading {
+.skeleton-loader {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+    border-radius: 4px;
+    height: 16px;
+    margin-bottom: 12px;
+}
+
+.skeleton-loader:nth-child(1) {
+    width: 70%;
+}
+
+.skeleton-loader:nth-child(2) {
+    width: 85%;
+    height: 20px;
+}
+
+.skeleton-loader:nth-child(3) {
+    width: 45%;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* === Empty State === */
+
+.empty-state {
     text-align: center;
-    padding: 20px;
+    padding: 40px 20px;
     color: #6c757d;
 }
+
+.empty-icon {
+    font-size: 3em;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #495057;
+}
+
+.empty-message {
+    font-size: 0.95em;
+    line-height: 1.5;
+    max-width: 300px;
+    margin: 0 auto;
+}
+
+/* === Error State === */
+
+.error-state {
+    text-align: center;
+    padding: 30px 20px;
+    color: #6c757d;
+    border: 1px solid #f5c6cb;
+    background: #f8d7da;
+    border-radius: 6px;
+    margin: 10px 0;
+}
+
+.error-icon {
+    font-size: 2.5em;
+    margin-bottom: 15px;
+    opacity: 0.7;
+}
+
+.error-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #721c24;
+    font-size: 1.1em;
+}
+
+.error-message {
+    font-size: 0.9em;
+    line-height: 1.5;
+    max-width: 400px;
+    margin: 0 auto 20px;
+}
+
+.retry-btn {
+    background: #007acc;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.retry-btn:hover {
+    background: #005a99;
+}
+
+/* === Report Button === */
 
 .report-button-container {
     text-align: center;
-    margin-top: 20px;
+    margin-top: 25px;
     padding-top: 20px;
     border-top: 1px solid #dee2e6;
 }
@@ -203,35 +351,77 @@
     font-size: 1em;
     font-weight: 500;
     cursor: pointer;
-    transition: background 0.2s, transform 0.1s;
+    transition: background 0.2s ease, transform 0.1s ease;
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .report-btn:hover {
     background: #005a99;
     transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .report-btn:active {
     transform: translateY(0);
 }
 
-/* Responsive design */
+.report-btn:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* === Responsive === */
+
 @media (max-width: 768px) {
+    .conditions-widget {
+        padding: 15px;
+    }
+    
     .conditions-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 8px;
     }
     
     .report-header {
         flex-direction: column;
         align-items: flex-start;
+        gap: 10px;
     }
     
     .report-details {
         grid-template-columns: 1fr;
     }
+    
+    .crowd-indicator {
+        min-width: auto;
+    }
+}
+
+/* === Utility Classes === */
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.mb-0 {
+    margin-bottom: 0;
 }
 </style>
