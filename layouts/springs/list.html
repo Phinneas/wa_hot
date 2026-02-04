@@ -344,8 +344,8 @@
                     },
                     (error) => {
                         let errorMsg = '❌ Could not get your location. ';
-                        
-                        switch(error.code) {
+
+                        switch (error.code) {
                             case error.PERMISSION_DENIED:
                                 errorMsg += 'Location permission denied. Please enable location access in your browser settings.';
                                 break;
@@ -358,7 +358,7 @@
                             default:
                                 errorMsg += 'Unknown error.';
                         }
-                        
+
                         status.textContent = errorMsg;
                         console.error('Geolocation error:', error);
                     },
