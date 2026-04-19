@@ -48,7 +48,7 @@ module.exports = {
         txt: {
           p: "#284139", // Dark forest — headers
           s: "#284139", // Dark forest — body text (dark for readability)
-          light: "#4a6b55", // Medium forest — muted/selected
+          light: "#2a3e30", // Darker forest — muted/selected (still dark)
         },
         bg: {
           p: "#f8d794", // Warm cream — main background
@@ -58,14 +58,14 @@ module.exports = {
         border: "#111a10", // Very dark green
         darkmode: {
           txt: {
-            p: "#f8d794", // Warm cream — headers
-            s: "#f8d794", // Warm cream — body text (light on dark bg)
-            light: "#bb6830", // Warm orange — muted
+            p: "#284139", // Dark forest — headers
+            s: "#284139", // Dark forest — body text (always dark)
+            light: "#2a3e30", // Darker forest — muted
           },
           bg: {
-            p: "#111a10", // Very dark green — main background
-            s: "#1e2d1c", // Lighter dark green — glass elements
-            t: "#111a10", // Very dark green — glass contrast
+            p: "#e8d5a0", // Slightly darker cream — main background
+            s: "#c0cfba", // Sage — glass elements
+            t: "#e8d5a0", // Slightly darker cream — glass contrast
           },
           border: "#111a10", // Very dark green
         },
