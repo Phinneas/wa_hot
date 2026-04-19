@@ -1,9 +1,7 @@
 ---
-image: "@assets/astrogon-star.svg"
-imageAlt: Astrogon logo
-title: Astrogon
-content: A rapidly-customizable template for a blog, documentation, and more.
+title: Soak Washington
+content: Your guide to Washington's best hot springs — from natural wilderness pools to luxury resort soaks.
 button:
-  label: See the Code
-  link: https://github.com/astrogon/astrogon
+  label: Explore the Map
+  link: /washington-hot-springs-map
 ---
