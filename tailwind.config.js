@@ -42,32 +42,32 @@ module.exports = {
     },
     extend: {
       colors: {
-        // Hot Springs palette
-        // Dark Vanilla #D5BA9C | Dirt #A1704B | Olive Drab Camo #5E5137 | Jasper Orange #DF804D | Coconut #A1553D
-        accent: "#DF804D", // Jasper Orange — buttons, highlights, map markers
+        // Pacific Northwest palette
+        // #284139 | #809d76 | #f8d794 | #bb6830 | #111a10
+        accent: "#bb6830", // Warm orange
         txt: {
-          p: "#5E5137", // Olive Drab Camo — headers
-          s: "#5E5137", // Olive Drab Camo — body text (dark for readability)
-          light: "#8B7355", // Warm medium brown — muted/selected
+          p: "#284139", // Dark forest — headers
+          s: "#284139", // Dark forest — body text (dark for readability)
+          light: "#4a6b55", // Medium forest — muted/selected
         },
         bg: {
-          p: "#D5BA9C", // Dark Vanilla — main background
-          s: "#E8D5C0", // Lighter vanilla — glass elements (lighter than bg-p for contrast)
-          t: "#D5BA9C", // Dark Vanilla — glass contrast
+          p: "#f8d794", // Warm cream — main background
+          s: "#d0dfca", // Light sage — glass elements (lighter for contrast)
+          t: "#f8d794", // Warm cream — glass contrast
         },
-        border: "#A1553D", // Coconut
+        border: "#111a10", // Very dark green
         darkmode: {
           txt: {
-            p: "#D5BA9C", // Dark Vanilla — headers
-            s: "#D5BA9C", // Dark Vanilla — body text (light on dark bg)
-            light: "#C4A882", // Medium vanilla — muted
+            p: "#f8d794", // Warm cream — headers
+            s: "#f8d794", // Warm cream — body text (light on dark bg)
+            light: "#bb6830", // Warm orange — muted
           },
           bg: {
-            p: "#5E5137", // Olive Drab Camo — main background
-            s: "#6B5D48", // Lighter olive — glass elements (lighter for contrast)
-            t: "#5E5137", // Olive Drab Camo — glass contrast
+            p: "#111a10", // Very dark green — main background
+            s: "#1e2d1c", // Lighter dark green — glass elements
+            t: "#111a10", // Very dark green — glass contrast
           },
-          border: "#A1553D", // Coconut
+          border: "#111a10", // Very dark green
         },
       },
       minHeight: {
