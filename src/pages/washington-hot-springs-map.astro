@@ -74,7 +74,7 @@ import { mapboxAccessToken } from '@/config/map';
         <button id="toggle-3d" class="layer-btn" title="Toggle 3D terrain">🏔 3D</button>
         <button id="toggle-fullscreen" class="layer-btn" title="Toggle fullscreen">⛶ Full</button>
         <button id="toggle-gas" class="layer-btn" title="Gas stations">⛽ Gas</button>
-        <button id="toggle-poi" class="layer-btn" title="Nearby restaurants & camping">🍽 POI</button>
+        <button id="toggle-poi" class="layer-btn" title="Camping, trails, parking & rest areas">🏕 POI</button>
         <button id="toggle-aqi" class="layer-btn" title="Air quality index">🌬 AQI</button>
         <button id="toggle-snow" class="layer-btn" title="Snow depth">❄ Snow</button>
         <button id="toggle-ev" class="layer-btn" title="EV charging stations">🔌 EV</button>
@@ -564,8 +564,10 @@ async function initMap() {
     btn.classList.toggle('active', activeLayers.poi);
 
     if (!activeLayers.poi) {
-      if (map.getLayer('poi-rest-markers')) map.removeLayer('poi-rest-markers');
       if (map.getLayer('poi-camp-markers')) map.removeLayer('poi-camp-markers');
+      if (map.getLayer('poi-trail-markers')) map.removeLayer('poi-trail-markers');
+      if (map.getLayer('poi-parking-markers')) map.removeLayer('poi-parking-markers');
+      if (map.getLayer('poi-rest-area-markers')) map.removeLayer('poi-rest-area-markers');
       if (map.getSource('poi-data')) map.removeSource('poi-data');
       return;
     }
@@ -576,18 +578,7 @@ async function initMap() {
       if (!poiData) { alert('POI data still loading, try again in a moment.'); activeLayers.poi = false; btn.classList.remove('active'); return; }
 
       map.addSource('poi-data', { type: 'geojson', data: poiData });
-      map.addLayer({
-        id: 'poi-rest-markers',
-        type: 'circle',
-        source: 'poi-data',
-        filter: ['==', ['get', 'type'], 'restaurant'],
-        paint: {
-          'circle-radius': 10,
-          'circle-color': '#dc2626',
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff'
-        }
-      });
+      // Campgrounds
       map.addLayer({
         id: 'poi-camp-markers',
         type: 'circle',
@@ -600,14 +591,55 @@ async function initMap() {
           'circle-stroke-color': '#ffffff'
         }
       });
+      // Trailheads
+      map.addLayer({
+        id: 'poi-trail-markers',
+        type: 'circle',
+        source: 'poi-data',
+        filter: ['==', ['get', 'type'], 'trailhead'],
+        paint: {
+          'circle-radius': 10,
+          'circle-color': '#059669',
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
+      });
+      // Parking
+      map.addLayer({
+        id: 'poi-parking-markers',
+        type: 'circle',
+        source: 'poi-data',
+        filter: ['==', ['get', 'type'], 'parking'],
+        paint: {
+          'circle-radius': 8,
+          'circle-color': '#6b7280',
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
+      });
+      // Rest areas
+      map.addLayer({
+        id: 'poi-rest-area-markers',
+        type: 'circle',
+        source: 'poi-data',
+        filter: ['==', ['get', 'type'], 'rest_area'],
+        paint: {
+          'circle-radius': 10,
+          'circle-color': '#2563eb',
+          'circle-stroke-width': 2,
+          'circle-stroke-color': '#ffffff'
+        }
+      });
 
       const poiPopup = (layer, icon) => (ev) => {
         const f = ev.features[0];
-        new mapboxgl.Popup().setLngLat(f.geometry.coordinates).setHTML(`<strong>${icon} ${f.properties.name}</strong>`).addTo(map);
+        new mapboxgl.Popup().setLngLat(f.geometry.coordinates).setHTML(`<strong>${icon} ${f.properties.name || 'Point of Interest'}</strong>`).addTo(map);
       };
-      map.on('click', 'poi-rest-markers', poiPopup('poi-rest-markers', '🍽'));
       map.on('click', 'poi-camp-markers', poiPopup('poi-camp-markers', '🏕'));
-      ['poi-rest-markers', 'poi-camp-markers'].forEach(l => {
+      map.on('click', 'poi-trail-markers', poiPopup('poi-trail-markers', '🥾'));
+      map.on('click', 'poi-parking-markers', poiPopup('poi-parking-markers', '🅿️'));
+      map.on('click', 'poi-rest-area-markers', poiPopup('poi-rest-area-markers', '🚻'));
+      ['poi-camp-markers', 'poi-trail-markers', 'poi-parking-markers', 'poi-rest-area-markers'].forEach(l => {
         map.on('mouseenter', l, () => { map.getCanvas().style.cursor = 'pointer'; });
         map.on('mouseleave', l, () => { map.getCanvas().style.cursor = ''; });
       });
