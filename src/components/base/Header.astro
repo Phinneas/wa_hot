@@ -55,7 +55,7 @@ const menu = [
             <a
               href={item.url}
               data-astro-reload={item.url === "/washington-hot-springs-map" ? true : undefined}
-              class={`block p-2 font-secondary font-semibold text-txt-p transition dark:text-darkmode-txt-p lg:px-2 lg:py-3 ${
+              class={`block p-2 font-display font-semibold text-txt-p transition dark:text-darkmode-txt-p lg:px-2 lg:py-3 ${
                 (pathname === `${item.url}/` || pathname === item.url) &&
                 "active"
               }`}
