@@ -1,4 +1,4 @@
 ---
 title: Authors
-description: Writers behind Soak Washington
+description: Writers behind Washington Hot Springs
 ---
