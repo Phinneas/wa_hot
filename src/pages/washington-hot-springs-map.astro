@@ -5,12 +5,12 @@ import { mapboxAccessToken } from '@/config/map';
 
 <BaseLayout
   title="Washington Hot Springs Map"
-  description="Interactive map of all hot springs in Washington with conditions, access info, and trip planning."
+  description="Interactive map of hot springs in Washington and Oregon with conditions, access info, and trip planning."
 >
   <div class="map-page" data-mapbox-token={mapboxAccessToken}>
     <aside class="map-sidebar">
       <div class="sidebar-header">
-        <h1>Hot Springs Map</h1>
+        <h1>WA & OR Hot Springs</h1>
         <p>Click a spring to see details</p>
       </div>
 
@@ -853,7 +853,7 @@ async function initMap() {
       <button class="spring-list-item" data-slug="${s.slug}">
         <span class="list-icon" style="color: ${getTempColor(s.temp_f)}">♨</span>
         <div class="list-info">
-          <strong>${s.name}</strong>
+          <strong>${s.name} ${s.state === 'OR' ? '<span class="state-badge">OR</span>' : ''}</strong>
           <span>${s.temp_f ? s.temp_f + '°F' : '—'} · ${s.access_type ?? '—'} · ${s.fee != null ? (s.fee === 0 ? 'Free' : '$' + s.fee) : '—'}</span>
         </div>
       </button>
@@ -1081,7 +1081,7 @@ async function initMap() {
     const blogSlug = spring.slug;
 
     content.innerHTML = `
-      <h2>${spring.name}</h2>
+      <h2>${spring.name} ${spring.state === 'OR' ? '<span class="state-badge">OR</span>' : ''}</h2>
       <div class="detail-chips">
         ${spring.temp_f ? `<span class="chip">🌡 ${spring.temp_f}°F</span>` : ''}
         ${spring.fee != null ? `<span class="chip">💰 ${spring.fee === 0 ? 'Free' : '$' + spring.fee}</span>` : ''}
@@ -1822,6 +1822,10 @@ initMap();
   .spring-detail h2 { font-size: 1.25rem; font-weight: 700; margin-bottom: 0.75rem; padding-right: 2rem; }
 
   .detail-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.875rem; }
+  .state-badge {
+    display: inline-block; font-size: 0.7rem; font-weight: 700; background: var(--color-border);
+    color: #fff; border-radius: 4px; padding: 0.1rem 0.4rem; margin-left: 0.4rem; vertical-align: middle;
+  }
   .chip {
     background: var(--color-bg); border: 1px solid var(--color-border);
     border-radius: 20px; padding: 0.2rem 0.6rem;
