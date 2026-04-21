@@ -10,7 +10,8 @@
     "access_type": "Hike-in",
     "season": "Year-round",
     "description": "Natural hot springs near Stevens Pass in the Central Cascades.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "2",
@@ -32,7 +33,8 @@
     "insider_tips": "The third pool from the entrance is the warmest and least crowded.",
     "nearby_gems": "Sol Duc Falls (1.6 miles), Appleton Pass trail",
     "last_verified": "2024-01-15",
-    "alerts": "No current alerts - all pools open"
+    "alerts": "No current alerts - all pools open",
+    "state": "WA"
   },
   {
     "id": "3",
@@ -45,7 +47,8 @@
     "access_type": "Drive-up",
     "season": "Year-round",
     "description": "Small unincorporated community in King County with natural hot springs.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "4",
@@ -58,7 +61,8 @@
     "access_type": "Hike-in",
     "season": "Year-round",
     "description": "Natural hot springs in the Mount Baker area of the North Cascades.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "5",
@@ -71,7 +75,8 @@
     "access_type": "Hike-in",
     "season": "Summer only",
     "description": "Remote hot springs in the Glacier Peak Wilderness, requires a long hike.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "6",
@@ -87,7 +92,8 @@
     "description": "Natural hot springs deep in the Cascades near North Bend, accessible via hike or mountain bike.",
     "best_time": "Weekday visits for solitude",
     "insider_tips": "Reservations required via goldmyer.org. The hike is 12 miles round trip.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "7",
@@ -100,7 +106,8 @@
     "access_type": "Hike-in",
     "season": "Year-round",
     "description": "Natural hot springs near Mount Baker in the Mt. Baker-Snoqualmie National Forest.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "8",
@@ -115,7 +122,8 @@
     "description": "Natural, undeveloped hot springs in Olympic National Park near Port Angeles. Free but requires a 2.5-mile hike.",
     "best_time": "Late morning on weekdays",
     "insider_tips": "Water temperature varies with river flow. Check with ranger station for conditions.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "9",
@@ -128,7 +136,8 @@
     "access_type": "Hike-in",
     "season": "Year-round",
     "description": "Natural hot springs along the Wind River in Carson, Gifford Pinchot National Forest.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "10",
@@ -144,7 +153,8 @@
     "clothing": "Clothing optional",
     "description": "Resort hot springs on Orcas Island with ocean views, sauna, and soaking tubs.",
     "best_time": "Off-season weekdays for fewer crowds",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "11",
@@ -157,7 +167,8 @@
     "access_type": "Hike-in",
     "season": "Summer only",
     "description": "Historic hot springs site in Mount Rainier National Park. The springs are mostly cooled but the area has cultural significance.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "12",
@@ -170,7 +181,8 @@
     "access_type": "Hike-in",
     "season": "Year-round",
     "description": "Natural hot springs in Skamania County near the Columbia River Gorge.",
-    "has_post": false
+    "has_post": false,
+    "state": "WA"
   },
   {
     "id": "13",
