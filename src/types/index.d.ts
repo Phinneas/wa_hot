@@ -25,6 +25,7 @@ export type SearchableEntry =
   | TermsEntry;
 
 export type SocialLinks = {
+  bluesky?: string;
   discord?: string;
   email?: string;
   facebook?: string;
