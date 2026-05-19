@@ -10,14 +10,20 @@ import cloudflare from "@astrojs/cloudflare";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://soakwashington.com",
+  site: "https://www.washingtonhotsprings.com",
   base: "/",
   trailingSlash: "ignore",
   prefetch: {
     prefetchAll: true
   },
   adapter: cloudflare(),
-  integrations: [react(), sitemap(), tailwind({
+  integrations: [react(), sitemap({
+    filter: (page) =>
+      !page.includes("/search") &&
+      !page.includes("/authors") &&
+      !page.includes("/blog/tags") &&
+      !page.includes("/blog/categories"),
+  }), tailwind({
     config: {
       applyBaseStyles: false
     }
