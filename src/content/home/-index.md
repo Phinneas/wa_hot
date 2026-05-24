@@ -1,8 +1,7 @@
 ---
-title: Washington Hot Springs
+title: Welcome to Your Guide for Pacific Northwest Hot Springs
 description: Your guide to Washington and Oregon's best hot springs — from natural wilderness pools to luxury resort soaks.
 content: |
-  # Welcome to Your Guide for Pacific Northwest Hot Springs
 
   The Cascade Volcanic Arc stretches from British Columbia to Northern California, and along its flanks, groundwater heated by residual magma rises through fault lines to the surface. In Washington and Oregon, that geology has created more than a dozen soakable springs — from wilderness pools hidden deep in the Glacier Peak Wilderness to historic resort baths built by railroad workers in the 1890s.
 
