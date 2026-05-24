@@ -1,7 +1,7 @@
 import plugin from "tailwindcss/plugin";
 
 let font_base = 16;
-let font_scale = 1.25;
+let font_scale = 1.20;
 
 let h6 = font_base / font_base;
 let h5 = h6 * font_scale;
