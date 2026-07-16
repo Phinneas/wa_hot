@@ -1,8 +1,8 @@
 ---
-import { plainify } from "@lib/textConverter";
 import Footer from "@components/base/Footer.astro";
 import Header from "@components/base/Header.astro";
 import ObserverScript from "@components/base/ObserverScript.astro";
+import SeoHead from "@components/common/SeoHead.astro";
 import "@/styles/main.scss";
 import { ClientRouter } from "astro:transitions";
 import Background from "@/components/base/Background.astro";
@@ -15,15 +15,25 @@ export interface Props {
   image?: string;
   noindex?: boolean;
   canonical?: string;
+  ogType?: 'website' | 'article' | 'profile';
+  author?: string;
+  publishedAt?: string;
+  updatedAt?: string;
+  jsonLd?: Record<string, unknown>[] | Record<string, unknown>;
 }
 
-const { title, description, image, noindex, canonical } = Astro.props;
-
-const siteTitle = "Washington Hot Springs";
-const siteDescription = "Your guide to Washington and Oregon's best hot springs — natural pools, resort soaks, and wilderness gems.";
-const siteImage = "@assets/og-image.png";
-const siteAuthor = "Washington Hot Springs";
-const baseUrl = "https://www.washingtonhotsprings.com";
+const {
+  title,
+  description,
+  image,
+  noindex,
+  canonical,
+  ogType,
+  author,
+  publishedAt,
+  updatedAt,
+  jsonLd,
+} = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -73,50 +83,18 @@ const baseUrl = "https://www.washingtonhotsprings.com";
       content="#000"
     />
     <meta name="generator" content={Astro.generator} />
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=5"
-    />
-
-    <title>
-      {plainify(title ? title : siteTitle)}
-    </title>
-
-    {canonical && <link rel="canonical" href={canonical} item-prop="url" />}
-    {noindex && <meta name="robots" content="noindex,nofollow" />}
-
-    <meta
-      name="description"
-      content={plainify(description ? description : siteDescription)}
-    />
-    <meta name="author" content={siteAuthor} />
-    <meta property="og:title" content={plainify(title ? title : siteTitle)} />
-    <meta
-      property="og:description"
-      content={plainify(description ? description : siteDescription)}
-    />
-    <meta property="og:type" content="website" />
-    <meta
-      property="og:url"
-      content={`${baseUrl}/${Astro.url.pathname.replace("/", "")}`}
-    />
-    <meta
-      property="og:image"
-      content={`${baseUrl}${image ? image : siteImage}`}
-    />
-
-    <meta property="og:site_name" content={siteTitle} />
-    <meta name="twitter:card" content="summary_large_image" />
-
-      
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600;1,9..144,700&display=swap"
-      rel="stylesheet"
+    <SeoHead
+      title={title}
+      description={description ? description : undefined}
+      ogImage={image}
+      ogType={ogType}
+      canonicalUrl={canonical}
+      noIndex={noindex}
+      author={author}
+      publishedAt={publishedAt}
+      updatedAt={updatedAt}
+      jsonLd={jsonLd}
     />
 
     <!-- https://docs.astro.build/en/guides/view-transitions -->
