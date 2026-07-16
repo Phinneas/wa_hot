@@ -54,6 +54,7 @@ export type SocialLinks = {
   tiktok?: string;
   website?: string;
   youtube?: string;
+  threads?: string;
 }
 
 export type EntryReference = {
