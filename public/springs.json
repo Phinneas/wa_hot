@@ -721,5 +721,19 @@
     "description": "Lukewarm primitive spring on Sulphur Creek near the Suiattle River in the Mt. Baker-Snoqualmie National Forest. Currently unreachable: Suiattle River Road washed out in December 2025 and Sulphur Creek Trail #793 is closed.",
     "has_post": false,
     "state": "WA"
+  },
+  {
+    "id": "49",
+    "slug": "tenzen-springs-cabins",
+    "name": "Tenzen Springs & Cabins",
+    "lat": 45.732,
+    "lng": -121.769,
+    "temp_f": null,
+    "fee": 312,
+    "access_type": "Resort",
+    "season": "Year-round",
+    "description": "Adults-only, Japanese onsen-inspired cabin resort on 100 acres near Stevenson in the Columbia River Gorge. Each cabin has a private geothermal soaking tub fed from a deep aquifer. Overnight stays only, no day use.",
+    "has_post": false,
+    "state": "WA"
   }
 ]
